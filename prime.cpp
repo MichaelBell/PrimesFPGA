@@ -23,7 +23,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 				uint P[N_Size * 2];
 				//mpn_sqr(pp, rp, mn);
 				{
-					uint T[(N_Size - 1) * 2];
+					uint T[N_Size * 2 - 1];
 
 					{
 						uint cy = 0;
@@ -165,11 +165,11 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 		}
 
 		// MPN_REDC_1(rp, tp, mp, mn, mi);
-		for (int j = 0; j < N_Size; ++j)
+		one_test_label5:for (int j = 0; j < N_Size; ++j)
 		{
 			uint cy = 0;
 			uint v = T[j] * mi;
-			for (int i = 0; i < N_Size; ++i)
+			one_test_label7:for (int i = 0; i < N_Size; ++i)
 			{
 				ulong p = ulong(M[i]) * ulong(v) + cy;
 				p += T[i + j];
@@ -181,7 +181,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 
 		{
 			uint cy = 0;
-			for (int i = 0; i < N_Size; ++i)
+			one_test_label8:for (int i = 0; i < N_Size; ++i)
 			{
 				ulong a = ulong(R[i]) + cy;
 				a += T[i + N_Size];
@@ -193,7 +193,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 			{
 				int32_t borrow = 0;
 				uint last_shifted = 0;
-				for (int i = 0; i < N_Size; ++i)
+				one_test_label9:for (int i = 0; i < N_Size; ++i)
 				{
 					int64_t a = R[i];
 					uint b = (M[i] << shift) | last_shifted;
@@ -250,7 +250,7 @@ void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE
 		uint mi1 = Mi_in[idx];
 		uint R1[N_Size];
 
-		for (int i = 0; i < N_Size; ++i)
+		fermat_test_label3:for (int i = 0; i < N_Size; ++i)
 		{
 			M1[i] = M_in[offset1 + i];
 			R1[i] = R_in[offset1 + i];
@@ -261,7 +261,7 @@ void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE
 		uint mi2 = Mi_in[idx+1];
 		uint R2[N_Size];
 
-		for (int i = 0; i < N_Size; ++i)
+		fermat_test_label4:for (int i = 0; i < N_Size; ++i)
 		{
 			M2[i] = M_in[offset2 + i];
 			R2[i] = R_in[offset2 + i];

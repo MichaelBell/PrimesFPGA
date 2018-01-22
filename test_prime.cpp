@@ -15,7 +15,7 @@ int main()
 {
 	PrimeTestCxt* cxt = primeTestInit();
 
-	const int LIST_SIZE = 16;
+	const int LIST_SIZE = 2;
 	const int N_Size = 12;
 
 	int errors = 0;
@@ -35,13 +35,13 @@ int main()
 	mpz_t z_ft_b;
 	mpz_init_set_ui(z_ft_b, 2);
 
-	while (k < 1024)
+	while (k < 512)
 	{
 		for (int j = 1; j < N_Size; ++j)
 		{
 			M[j] = (rand() << 16) + rand();
 		}
-		if (k != 0x90)
+		if (k != 210)
 		{
 			k += LIST_SIZE;
 			continue;
