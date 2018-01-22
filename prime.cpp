@@ -1,5 +1,7 @@
 #include "prime.h"
 
+#include "ap_int.h"
+
 uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 {
 	const uint shift = __builtin_clz(M[N_Size - 1]);
@@ -16,6 +18,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 
 		do
 		{
+			p_array_label:
 			{
 				uint P[N_Size * 2];
 				//mpn_sqr(pp, rp, mn);
@@ -24,11 +27,13 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 
 					{
 						uint cy = 0;
-						for (int i = 0; i < N_Size - 1; ++i)
+						uint v = R[0];
+						mul1_label:for (int i = 0; i < N_Size - 1; ++i)
 						{
-							ulong p = ulong(R[i + 1]) * ulong(R[0]) + cy;
+							ulong p = ulong(R[i + 1]) * ulong(v) + cy;
 							T[i] = uint(p);
 							cy = uint(p >> 32);
+							T[N_Size + i] = 0;
 						}
 						T[N_Size - 1] = cy;
 					}
@@ -38,61 +43,59 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 						uint cy = 0;
 						fermat_test_label0:for (int i = j; i < N_Size; ++i)
 						{
-							ulong p = ulong(R[i]) * ulong(R[j - 1]);
+							ulong p = ulong(R[i]) * ulong(R[j - 1]) + T[i + j - 2];
 							p += cy;
-							p += T[i + j - 2];
 							T[i + j - 2] = uint(p);
 							cy = uint(p >> 32);
 						}
 						T[N_Size + j - 2] = cy;
 					}
 
-					// Better not to include this into the next loop as doing it first
-					// avoids latency stalls.
-					one_test_label1:for (int i = 0; i < N_Size; ++i)
 					{
-						ulong p = ulong(R[i]) * ulong(R[i]);
-						P[2 * i] = uint(p);
-						P[2 * i + 1] = uint(p >> 32);
-					}
+						ulong p = ulong(R[0]) * ulong(R[0]);
+						P[0] = uint(p);
 
-					uint cy = 0;
-					for (int i = 0; i < N_Size - 1; ++i)
-					{
-						uint t = T[2 * i] & highbit;
-						ulong a = ulong(P[2 * i + 1]) + cy;
-						a += T[2 * i] << 1;
-						P[2 * i + 1] = uint(a);
-						cy = (t >> 31) + uint(a >> 32);
+						uint cy = 0;
+						one_test_label1:for (int i = 0; i < N_Size - 1; ++i)
+						{
+							uint t = T[2 * i] & highbit;
+							ulong a = (p >> 32) + cy;
+							a += T[2 * i] << 1;
+							P[2 * i + 1] = uint(a);
+							cy = (t >> 31) + uint(a >> 32);
 
-						t = T[2 * i + 1] & highbit;
-						a = ulong(P[2 * i + 2]) + cy;
-						a += T[2 * i + 1] << 1;
-						P[2 * i + 2] = uint(a);
-						cy = (t >> 31) + uint(a >> 32);
+							p = ulong(R[i+1]) * ulong(R[i+1]);
+							t = T[2 * i + 1] & highbit;
+							a = (p & 0xFFFFFFFF) + cy;
+							a += T[2 * i + 1] << 1;
+							P[2 * i + 2] = uint(a);
+							cy = (t >> 31) + uint(a >> 32);
+						}
+						P[2 * N_Size - 1] = uint(p >> 32) + cy;
 					}
-					P[2 * N_Size - 1] += cy;
 				}
 
 				//if (mpn_redc_1(rp, pp, mp, mn, mi) != 0)
 				//  mpn_sub_n(rp, rp, mshifted, n);
-				for (int j = 0; j < N_Size; ++j)
 				{
-					uint cy = 0;
-					uint v = P[j] * mi;
-					fermat_test_label1:for (int i = 0; i < N_Size; ++i)
+					one_test_label6:for (int j = 0; j < N_Size; ++j)
 					{
-						ulong p = ulong(M[i]) * ulong(v) + cy;
-						p += P[i + j];
-						P[i + j] = uint(p);
-						cy = uint(p >> 32);
+						uint cy = 0;
+						uint v = P[j] * mi;
+						fermat_test_label1:for (int i = 0; i < N_Size; ++i)
+						{
+							ulong p = ulong(M[i]) * ulong(v) + cy;
+							p += P[i + j];
+							P[i + j] = uint(p);
+							cy = uint(p >> 32);
+						}
+						R[j] = cy;
 					}
-					R[j] = cy;
 				}
 
 				{
 					uint cy = 0;
-					for (int i = 0; i < N_Size; ++i)
+					sum1_label:for (int i = 0; i < N_Size; ++i)
 					{
 						ulong a = ulong(R[i]) + cy;
 						a += P[i + N_Size];
@@ -104,7 +107,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 					{
 						int32_t borrow = 0;
 						uint last_shifted = 0;
-						for (int i = 0; i < N_Size; ++i)
+						sub1_label:for (int i = 0; i < N_Size; ++i)
 						{
 							int64_t a = R[i];
 							uint b = (M[i] << shift) | last_shifted;
@@ -121,7 +124,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 			{
 				//mp_limb_t carry = mpn_lshift(rp, rp, mn, 1);
 				uint carry = 0;
-				for (int i = 0; i < N_Size; ++i)
+				shift1_label:for (int i = 0; i < N_Size; ++i)
 				{
 					uint t = R[i] & highbit;
 					R[i] <<= 1;
@@ -133,7 +136,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 					//carry -= mpn_sub_n(rp, rp, mshifted, mn);
 					int32_t borrow = 0;
 					uint last_shifted = 0;
-					for (int i = 0; i < N_Size; ++i)
+					sub2_label:for (int i = 0; i < N_Size; ++i)
 					{
 						int64_t a = R[i];
 						uint b = (M[i] << shift) | last_shifted;
@@ -228,7 +231,9 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 	return result;
 }
 
-void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
+#define TESTS_PER_GROUP 2
+
+void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
 {
 #pragma HLS INTERFACE s_axilite port=return bundle=axis
 #pragma HLS INTERFACE s_axilite port=is_prime bundle=axis
@@ -237,10 +242,32 @@ void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE
 #pragma HLS INTERFACE s_axilite port=M_in bundle=axis
 
 	fermat_test_outer_loop:
-	for (int idx = 0; idx < LIST_SIZE; ++idx)
+	for (int idx = 0; idx < LIST_SIZE; idx += TESTS_PER_GROUP)
 	{
 		// Get the index of the current element to be processed
-		const int offset = idx * N_Size;
-		is_prime[idx] = one_test(&M_in[offset], Mi_in[idx], &R_in[offset]);
+		const int offset1 = idx * N_Size;
+		uint M1[N_Size];
+		uint mi1 = Mi_in[idx];
+		uint R1[N_Size];
+
+		for (int i = 0; i < N_Size; ++i)
+		{
+			M1[i] = M_in[offset1 + i];
+			R1[i] = R_in[offset1 + i];
+		}
+
+		const int offset2 = (idx + 1) * N_Size;
+		uint M2[N_Size];
+		uint mi2 = Mi_in[idx+1];
+		uint R2[N_Size];
+
+		for (int i = 0; i < N_Size; ++i)
+		{
+			M2[i] = M_in[offset2 + i];
+			R2[i] = R_in[offset2 + i];
+		}
+
+		is_prime[idx] = one_test(M1, mi1, R1);
+		is_prime[idx + 1] = one_test(M2, mi2, R2);
 	}
 }
