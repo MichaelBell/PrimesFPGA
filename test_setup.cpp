@@ -113,7 +113,7 @@ PrimeTestCxt* primeTestInit()
 	// Create buffers on host
 	cxt->R = (uint*)malloc(sizeof(uint)*(N_Size*MAX_JOB_SIZE + 1));
 	cxt->MI = (uint*)malloc(sizeof(uint)*MAX_JOB_SIZE);
-	cxt->is_prime = (uint8_t*)malloc(sizeof(uint8_t)*MAX_JOB_SIZE);
+	cxt->is_prime = (uint8_t*)malloc(sizeof(uint8_t)*MAX_JOB_SIZE*2);
 
 	return cxt;
 }

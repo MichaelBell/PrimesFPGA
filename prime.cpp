@@ -233,7 +233,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 
 #define TESTS_PER_GROUP 2
 
-void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
+void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE*2])
 {
 #pragma HLS INTERFACE s_axilite port=return bundle=axis
 #pragma HLS INTERFACE s_axilite port=is_prime bundle=axis
@@ -270,4 +270,7 @@ void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE
 		is_prime[idx] = one_test(M1, mi1, R1);
 		is_prime[idx + 1] = one_test(M2, mi2, R2);
 	}
+
+	is_prime[2] = 0;
+	is_prime[3] = 0;
 }
