@@ -13,7 +13,7 @@ set_part {xc7z010clg400-1}
 create_clock -period 10 -name default
 set_clock_uncertainty 15%
 source "./primetest/solution4/directives.tcl"
-csim_design -clean
+csim_design
 csynth_design
 cosim_design
 export_design -rtl verilog -format ip_catalog

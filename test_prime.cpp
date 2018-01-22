@@ -8,7 +8,7 @@
 
 struct PrimeTestCxt;
 PrimeTestCxt* primeTestInit();
-void primeTest(PrimeTestCxt* cxt, int N_Size, int listSize, const uint32_t* M, uint8_t* is_prime);
+void primeTest(PrimeTestCxt* cxt, uint32_t N_Size, int listSize, const uint32_t* M, uint8_t* is_prime);
 void primeTestTerm(PrimeTestCxt* cxt);
 
 int main()
@@ -16,13 +16,14 @@ int main()
 	PrimeTestCxt* cxt = primeTestInit();
 
 	const int LIST_SIZE = 16;
-	const int N_Size = 56;
+	const int N_Size = 9;
+	const int MAX_N_SIZE = 64;
 
 	int errors = 0;
 
 	srand(0);
 
-	uint32_t *M = (uint32_t*)malloc(sizeof(uint32_t)*N_Size*LIST_SIZE);
+	uint32_t *M = (uint32_t*)malloc(sizeof(uint32_t)*MAX_N_SIZE*LIST_SIZE);
 	uint8_t *is_prime = (uint8_t*)malloc(sizeof(uint8_t)*LIST_SIZE);
 
 	uint32_t k = 0;
@@ -41,17 +42,17 @@ int main()
 		{
 			M[j] = (rand() << 16) + rand();
 		}
-		if (false) // (k != 512)
+		if (k != 0x60)
 		{
 			k += LIST_SIZE;
 			continue;
 		}
 
 		for (uint32_t i = 0; i < LIST_SIZE; i++) {
-			M[i*N_Size] = (i + k) * 2 + 1;
+			M[i*MAX_N_SIZE] = (i + k) * 2 + 1;
 			for (int j = 1; j < N_Size; ++j)
 			{
-				M[i*N_Size + j] = M[j];
+				M[i*MAX_N_SIZE + j] = M[j];
 			}
 		}
 		k += LIST_SIZE;
@@ -69,7 +70,7 @@ int main()
 
 		mp_limb_t high_m = mp_limb_t(M[1]) << 32;
 		for (uint32_t i = 0; i < LIST_SIZE; i+=3) {
-			z_m->_mp_d[0] = high_m + M[i*N_Size];
+			z_m->_mp_d[0] = high_m + M[i*MAX_N_SIZE];
 
 			mpz_sub_ui(z_ft_n, z_m, 1);
 			mpz_powm(z_ft_r, z_ft_b, z_ft_n, z_m);
@@ -80,7 +81,7 @@ int main()
 				//abort();
 			}
 
-			if (is_prime[i]) printf("%d\n", M[i*N_Size]);
+			if (is_prime[i]) printf("%d\n", M[i*MAX_N_SIZE]);
 		}
 	}
 

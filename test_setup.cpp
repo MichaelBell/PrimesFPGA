@@ -52,19 +52,19 @@ const unsigned char  binvert_limb_table[128] = {
     (inv) = __inv;                                      \
   } while (0)
 
-static void setup_fermat(int num, const mp_limb_t* M, mp_limb_t* MI, mp_limb_t* R)
+static void setup_fermat(const uint N_Size, int num, const mp_limb_t* M, mp_limb_t* MI, mp_limb_t* R)
 {
 	for (int j = 0; j < num; ++j)
 	{
 		mp_size_t mn = N_Size;
-		mp_limb_t mshifted[N_Size];
+		mp_limb_t mshifted[MAX_N_SIZE];
 		mp_srcptr mp;
 		mp_ptr rp;
 		struct gmp_div_inverse minv;
 
 		// REDCify: r = B^n * 2 % M
-		mp = &M[j*N_Size];
-		rp = &R[j*N_Size];
+		mp = &M[j*MAX_N_SIZE];
+		rp = &R[j*MAX_N_SIZE];
 		mpn_div_qr_invert(&minv, mp, mn);
 
 		if (minv.shift > 0)
@@ -84,7 +84,7 @@ static void setup_fermat(int num, const mp_limb_t* M, mp_limb_t* MI, mp_limb_t* 
 		if (minv.shift > 0)
 		{
 			mpn_rshift(rp, rp, mn, minv.shift);
-			mp = &M[j*N_Size];
+			mp = &M[j*MAX_N_SIZE];
 		}
 
 		mp_limb_t mi;
@@ -111,16 +111,16 @@ PrimeTestCxt* primeTestInit()
 	PrimeTestCxt* cxt = new PrimeTestCxt;
 
 	// Create buffers on host
-	cxt->R = (uint*)malloc(sizeof(uint)*(N_Size*MAX_JOB_SIZE + 1));
+	cxt->R = (uint*)malloc(sizeof(uint)*(MAX_N_SIZE*MAX_JOB_SIZE + 1));
 	cxt->MI = (uint*)malloc(sizeof(uint)*MAX_JOB_SIZE);
 	cxt->is_prime = (uint8_t*)malloc(sizeof(uint8_t)*MAX_JOB_SIZE);
 
 	return cxt;
 }
 
-void primeTest(PrimeTestCxt* cxt, int in_N_Size, int listSize, const uint* M, uint8_t* is_prime)
+void primeTest(PrimeTestCxt* cxt, uint N_Size, int listSize, const uint* M, uint8_t* is_prime)
 {
-	if (in_N_Size != N_Size)
+	if (N_Size > MAX_N_SIZE)
 	{
 		printf("N Size out of bounds\n");
 		abort();
@@ -132,7 +132,7 @@ void primeTest(PrimeTestCxt* cxt, int in_N_Size, int listSize, const uint* M, ui
 
 	if (nextJobSize > 0)
 	{
-		setup_fermat(nextJobSize, M, cxt->MI, cxt->R);
+		setup_fermat(N_Size, nextJobSize, M, cxt->MI, cxt->R);
 	}
 
 	while (nextJobSize == MAX_JOB_SIZE)
@@ -144,15 +144,15 @@ void primeTest(PrimeTestCxt* cxt, int in_N_Size, int listSize, const uint* M, ui
 
 		// Copy the lists A and B to their respective memory buffers
 		DPRINTF("before execution\n");
-		fermat_test(M, cxt->MI, cxt->R, cxt->is_prime);
+		fermat_test(N_Size, M, cxt->MI, cxt->R, cxt->is_prime);
 		
 		memcpy(is_prime, cxt->is_prime, jobSize * sizeof(uint8_t));
 		is_prime += jobSize;
 
 		if (nextJobSize > 0)
 		{
-			M += jobSize*N_Size;
-			setup_fermat(nextJobSize, M, cxt->MI, cxt->R);
+			M += jobSize*MAX_N_SIZE;
+			setup_fermat(N_Size, nextJobSize, M, cxt->MI, cxt->R);
 		}
 	}
 }
