@@ -8,11 +8,11 @@ set_top fermat_test
 add_files primetest/prime.cpp
 add_files -tb primetest/test_setup.cpp
 add_files -tb primetest/test_prime.cpp
-open_solution "solution1"
-set_part {xc7z010clg400-1} -tool vivado
+open_solution "solution4"
+set_part {xc7z010clg400-1}
 create_clock -period 10 -name default
-set_clock_uncertainty 20%
-source "./primetest/solution1/directives.tcl"
+set_clock_uncertainty 15%
+source "./primetest/solution4/directives.tcl"
 csim_design -clean
 csynth_design
 cosim_design
