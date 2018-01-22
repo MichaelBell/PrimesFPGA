@@ -1,6 +1,6 @@
 #pragma once
 #define N_Size	12
-#define LIST_SIZE 16
+#define LIST_SIZE 2
 
 #include <string.h>
 #include <stdint.h>

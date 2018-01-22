@@ -228,7 +228,7 @@ uint8_t one_test(const uint M[N_Size], const uint mi, uint R[N_Size])
 	return result;
 }
 
-void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
+void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[N_Size * LIST_SIZE], uint8_t is_prime[LIST_SIZE*2])
 {
 #pragma HLS INTERFACE s_axilite port=return bundle=axis
 #pragma HLS INTERFACE s_axilite port=is_prime bundle=axis
@@ -241,6 +241,11 @@ void fermat_test(const uint M_in[N_Size * LIST_SIZE], const uint Mi_in[LIST_SIZE
 	{
 		// Get the index of the current element to be processed
 		const int offset = idx * N_Size;
-		is_prime[idx] = one_test(&M_in[offset], Mi_in[idx], &R_in[offset]);
+		uint R[N_Size];
+		for (int i = 0; i < N_Size; ++i) R[i] = R_in[offset + i];
+		is_prime[idx] = one_test(&M_in[offset], Mi_in[idx], R);
 	}
+
+	is_prime[2] = 0;
+	is_prime[3] = 0;
 }

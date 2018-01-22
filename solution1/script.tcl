@@ -6,8 +6,8 @@
 open_project primetest
 set_top fermat_test
 add_files primetest/prime.cpp
-add_files -tb primetest/test_setup.cpp
 add_files -tb primetest/test_prime.cpp
+add_files -tb primetest/test_setup.cpp
 open_solution "solution1"
 set_part {xc7z010clg400-1} -tool vivado
 create_clock -period 10 -name default
