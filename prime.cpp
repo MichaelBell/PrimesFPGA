@@ -4,6 +4,7 @@
 
 typedef ap_uint<7> nsize_t;
 
+template<uint foo>
 uint8_t one_test(const nsize_t N_Size, const uint M[MAX_N_SIZE], const uint mi, uint R[MAX_N_SIZE])
 {
 	const uint shift = __builtin_clz(M[N_Size - 1]);
@@ -221,7 +222,7 @@ uint8_t one_test(const nsize_t N_Size, const uint M[MAX_N_SIZE], const uint mi, 
 	return result;
 }
 
-#define TESTS_PER_GROUP 2
+#define TESTS_PER_GROUP 16
 
 void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[MAX_N_SIZE * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
 {
@@ -235,30 +236,55 @@ void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], con
 	fermat_test_outer_loop:
 	for (int idx = 0; idx < LIST_SIZE; idx += TESTS_PER_GROUP)
 	{
-		// Get the index of the current element to be processed
-		const int offset1 = idx * MAX_N_SIZE;
-		uint M1[MAX_N_SIZE];
-		uint mi1 = Mi_in[idx];
-		uint R1[MAX_N_SIZE];
+		int offset;
 
-		fermat_test_label3:for (nsize_t i = 0; i < N_Size; ++i)
-		{
-			M1[i] = M_in[offset1 + i];
-			R1[i] = R_in[offset1 + i];
+#define PREP_TEST(NUM) \
+		offset = (idx + NUM) * MAX_N_SIZE; \
+		uint M##NUM[MAX_N_SIZE]; \
+		uint mi##NUM = Mi_in[idx]; \
+		uint R##NUM[MAX_N_SIZE]; \
+ \
+		copy_label##NUM:for (nsize_t i = 0; i < N_Size; ++i) \
+		{ \
+			M##NUM[i] = M_in[offset + i]; \
+			R##NUM[i] = R_in[offset + i]; \
 		}
 
-		const int offset2 = (idx + 1) * MAX_N_SIZE;
-		uint M2[MAX_N_SIZE];
-		uint mi2 = Mi_in[idx+1];
-		uint R2[MAX_N_SIZE];
+		PREP_TEST(0);
+		PREP_TEST(1);
+		PREP_TEST(2);
+		PREP_TEST(3);
+		PREP_TEST(4);
+		PREP_TEST(5);
+		PREP_TEST(6);
+		PREP_TEST(7);
+		PREP_TEST(8);
+		PREP_TEST(9);
+		PREP_TEST(10);
+		PREP_TEST(11);
+		PREP_TEST(12);
+		PREP_TEST(13);
+		PREP_TEST(14);
+		PREP_TEST(15);
 
-		fermat_test_label4:for (nsize_t i = 0; i < N_Size; ++i)
-		{
-			M2[i] = M_in[offset2 + i];
-			R2[i] = R_in[offset2 + i];
-		}
+#define RUN_TEST(NUM) \
+		is_prime[idx + NUM] = one_test<NUM>(N_Size, M##NUM, mi##NUM, R##NUM)
 
-		is_prime[idx] = one_test(N_Size, M1, mi1, R1);
-		is_prime[idx + 1] = one_test(N_Size, M2, mi2, R2);
+		RUN_TEST(0);
+		RUN_TEST(1);
+		RUN_TEST(2);
+		RUN_TEST(3);
+		RUN_TEST(4);
+		RUN_TEST(5);
+		RUN_TEST(6);
+		RUN_TEST(7);
+		RUN_TEST(8);
+		RUN_TEST(9);
+		RUN_TEST(10);
+		RUN_TEST(11);
+		RUN_TEST(12);
+		RUN_TEST(13);
+		RUN_TEST(14);
+		RUN_TEST(15);
 	}
 }
