@@ -1,6 +1,6 @@
 #pragma once
 #define MAX_N_SIZE	64
-#define LIST_SIZE 16
+#define LIST_SIZE 360
 
 #include <string.h>
 #include <stdint.h>
