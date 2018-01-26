@@ -222,7 +222,7 @@ uint8_t one_test(const nsize_t N_Size, const uint M[MAX_N_SIZE], const uint mi, 
 	return result;
 }
 
-#define TESTS_PER_GROUP 360
+#define TESTS_PER_GROUP 232
 
 void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], const uint Mi_in[LIST_SIZE], const uint R_in[MAX_N_SIZE * LIST_SIZE], uint8_t is_prime[LIST_SIZE])
 {
@@ -482,6 +482,7 @@ void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], con
                 PREP_TEST(229);
                 PREP_TEST(230);
                 PREP_TEST(231);
+#if 0
                 PREP_TEST(232);
                 PREP_TEST(233);
                 PREP_TEST(234);
@@ -610,7 +611,6 @@ void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], con
                 PREP_TEST(357);
                 PREP_TEST(358);
                 PREP_TEST(359);
-#if 0
                 PREP_TEST(360);
                 PREP_TEST(361);
                 PREP_TEST(362);
@@ -889,6 +889,7 @@ void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], con
                 RUN_TEST(229);
                 RUN_TEST(230);
                 RUN_TEST(231);
+#if 0
                 RUN_TEST(232);
                 RUN_TEST(233);
                 RUN_TEST(234);
@@ -1017,7 +1018,6 @@ void fermat_test(const uint N_Size, const uint M_in[MAX_N_SIZE * LIST_SIZE], con
                 RUN_TEST(357);
                 RUN_TEST(358);
                 RUN_TEST(359);
-#if 0
                 RUN_TEST(360);
                 RUN_TEST(361);
                 RUN_TEST(362);
